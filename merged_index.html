@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 修改标题 -->
+    <title>US易损件寿命及吨耗成本</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif; /* 设置通用字体 */
+            font-size: 16px; /* 设置全局字号 */
+        }
+
+        #container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center; /* 标题居中显示 */
+            font-size: 30px; /* 使标题字号与其他元素一致 */
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select,
+        input[type="number"],
+        button {
+            width: 200px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 16px; /* 表单元素字号与全局一致 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+            font-size: 16px; /* 表格单元格字号与全局一致 */
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+        
+        /* 新增样式用于布局 */
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .input-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 48%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h1>US易损件寿命及吨耗成本</h1>
+        <!-- 机型选择与转速选择并排 -->
+        <div class="input-group">
+            <div class="input-box">
+                <label for="combo1">机型选择：</label>
+                <select id="combo1">
+                    <option value="">请选择机型</option>
+                    <option value="US/USF322H">US/USF322H</option>
+                    <option value="US/USF394H">US/USF394H</option>
+                    <option value="US/USF496H">US/USF496H</option>
+                    <option value="US/USF598H">US/USF598H</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label for="combo2">转速选择 (m/s)：</label>
+                <select id="combo2">
+                    <option value="">请选择转速</option>
+                    <option value="35">35</option>
+                    <option value="40">40</option>
+                    <option value="45">45</option>
+                    <option value="50">50</option>
+                    <option value="55">55</option>
+                    <option value="60">60</option>
+                    <option value="65">65</option>
+                    <option value="70">70</option>
+                    <option value="75">75</option>
+                </select>
+            </div>
+        </div>
+        <!-- 粒径选择与含硅量选择并排 -->
+        <div class="input-group">
+            <div class="input-box">
+                <label for="combo3">粒径选择 (mm)：</label>
+                <select id="combo3">
+                    <option value="">请选择粒径</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                    <option value="70">70</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label for="combo4">含硅量选择：</label>
+                <select id="combo4">
+                    <option value="">请选择含硅量</option>
+                    <option value="4">4</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="55">55</option>
+                    <option value="60">60</option>
+                    <option value="65">65</option>
+                    <option value="70">70</option>
+                    <option value="75">75</option>
+                    <option value="80">80</option>
+                    <option value="85">85</option>
+                    <option value="90">90</option>
+                    <option value="97">97</option>
+                    <option value="98">98</option>
+                </select>
+            </div>
+        </div>
+        <!-- 通过量与预计产量并排 -->
+        <div class="input-group">
+            <div class="input-box">
+                <label for="text1">通过量 (t/h)：</label>
+                <input type="number" id="text1">
+            </div>
+            <div class="input-box">
+                <!-- 修改标签文本 -->
+                <label for="text2">纯制砂预计产量 (t/h)：</label>
+                <input type="number" id="text2">
+            </div>
+        </div>
+        <!-- 移除导出易损件价格按钮 -->
+        <button onclick="calculateLife()">计算寿命与吨耗价格</button>
+        <button onclick="importPrice()">导入易损件价格</button>
+        <br>
+        <table id="vsflexgrid1">
+            <thead>
+                <tr>
+                    <!-- 序号列放在第一列 -->
+                    <th>序号</th>
+                    <!-- 易损件描述列放在第二列 -->
+                    <th>易损件描述</th>
+                    <th>编码</th>
+                    <th>数量</th>
+                    <!-- 修改表头 -->
+                    <th>价格CNY</th>
+                    <!-- 修改表头 -->
+                    <th>寿命h</th>
+                    <!-- 修改表头 -->
+                    <th>吨耗成本CNY/t</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 调整表格内容顺序 -->
+                <tr>
+                    <td>1</td>
+                    <td>转子</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>抛料头</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>转子底衬板</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>转子顶衬板</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>分料盘</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>给料套筒</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>喂料环眼</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>转子修理</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        // 获取机型选择框和通过量文本框
+        const combo1 = document.getElementById('combo1');
+        const text1 = document.getElementById('text1');
+        const text2 = document.getElementById('text2'); // 获取纯制砂预计产量文本框
+
+        // 监听机型选择框的 change 事件
+        combo1.addEventListener('change', function () {
+            const selectedValue = this.value;
+            switch (selectedValue) {
+                case 'US/USF322H':
+                    text1.value = 200;
+                    text2.value = 60; // 填充纯制砂预计产量
+                    break;
+                case 'US/USF394H':
+                    text1.value = 400;
+                    text2.value = 100; // 填充纯制砂预计产量
+                    break;
+                case 'US/USF496H':
+                    text1.value = 600;
+                    text2.value = 150; // 填充纯制砂预计产量
+                    break;
+                case 'US/USF598H':
+                    text1.value = 800;
+                    text2.value = 200; // 填充纯制砂预计产量
+                    break;
+                default:
+                    text1.value = '';
+                    text2.value = ''; // 清空纯制砂预计产量
+            }
+        });
+        
+        // 初始化变量
+        let T = 0; // 含硅量系数
+        let K = 0; // 机型系数
+        let f = 0; // 转速系数
+        let h = 0; // 入料尺寸系数
+        let Q = 0; // 通过量基数
+        let X = 0; // 机型系数2
+        let Price = new Array(8).fill(0); // 价格
+        let Life = new Array(8).fill(0); // 寿命
+        let NUM = new Array(8).fill(0); // 数量
+        let Cod = new Array(8).fill(""); // 编码
+        let LifeC = [8.5, 1, 1, 1, 0.9, 2, 3, 1]; // 部件寿命系数
+        let MpT = new Array(8).fill(0); // 吨耗价格
+
+        // 计算基准值
+        function JiZhun() {
+            const text1Value = parseFloat(document.getElementById('text1').value);
+            if (f === 0 || K === 0 || h === 0 || X === 0 || isNaN(text1Value) || text1Value === 0) {
+                return 0;
+            }
+            return Math.round((T * Math.sqrt(Q / text1Value) / (f * K * h * X)) / 10) * 10;
+        }
+
+        // 处理机型选择
+        function handleCombo1Change() {
+            const combo1 = document.getElementById('combo1');
+            switch (combo1.value) {
+                case "US/USF322H":
+                    K = 0.92;
+                    Q = 150;
+                    X = 1.2;
+                    Cod = [2100107274, 2100191346, 1100016287, 1100014915, 1100016278, 1100016280, 1100014915, ""];
+                    NUM = [1, 6, 3, 3, 1, 1, 1, 1];
+                    break;
+                case "US/USF394H":
+                    K = 0.8;
+                    Q = 300;
+                    X = 1.4;
+                    Cod = [2100108648, 2100191346, 1100016351, 1100016350, 1100016347, 1100016352, 1100015025, ""];
+                    NUM = [1, 9, 3, 3, 1, 1, 1, 1];
+                    break;
+                case "US/USF496H":
+                    K = 0.75;
+                    Q = 600;
+                    X = 1.4;
+                    Cod = [2100110556, 2100191346, 1100016456, 1100016455, 1100015013, 1100015017, 1100016457, ""];
+                    NUM = [1, 12, 3, 3, 1, 1, 1, 1];
+                    break;
+                case "US/USF598H":
+                    K = 0.67;
+                    Q = 1200;
+                    X = 1.5;
+                    Cod = [2100203555, 2100191346, 1100020171, 1100020170, 1100039148, 1100039146, 1100020169, ""];
+                    NUM = [1, 15, 3, 3, 1, 1, 1, 1];
+                    break;
+                default:
+                    break;
+            }
+            // 更新表格编码和数量
+            const table = document.getElementById('vsflexgrid1').getElementsByTagName('tbody')[0];
+            for (let i = 0; i < 8; i++) {
+                const row = table.rows[i];
+                if (row) {
+                    // 注意这里列的索引从 2 开始，因为第一列是易损件描述
+                    row.cells[2].textContent = Cod[i];
+                    row.cells[3].textContent = NUM[i];
+                    row.cells[4].textContent = "";
+                }
+            }
+        }
+
+        // 处理转速选择
+        function handleCombo2Change() {
+            const combo2 = document.getElementById('combo2');
+            switch (combo2.value) {
+                case "35":
+                    f = 0.8;
+                    break;
+                case "40":
+                    f = 0.9;
+                    break;
+                case "45":
+                    f = 1;
+                    break;
+                case "50":
+                    f = 1.2;
+                    break;
+                case "55":
+                    f = 1.3;
+                    break;
+                case "60":
+                    f = 1.5;
+                    break;
+                case "65":
+                    f = 1.85;
+                    break;
+                case "70":
+                    f = 2.15;
+                    break;
+                case "75":
+                    f = 2.5;
+                    break;
+                default:
+                    f = 0;
+                    break;
+            }
+        }
+
+        // 处理粒径选择
+        function handleCombo3Change() {
+            const combo3 = document.getElementById('combo3');
+            switch (combo3.value) {
+                case "5":
+                    h = 0.8;
+                    break;
+                case "10":
+                    h = 0.82;
+                    break;
+                case "20":
+                    h = 0.86;
+                    break;
+                case "30":
+                    h = 0.93;
+                    break;
+                case "40":
+                    h = 1;
+                    break;
+                case "50":
+                    h = 1.2;
+                    break;
+                case "60":
+                    h = 1.3;
+                    break;
+                case "70":
+                    h = 1.4;
+                    break;
+                default:
+                    h = 0;
+                    break;
+            }
+        }
+
+        // 处理含硅量选择
+        function handleCombo4Change() {
+            const combo4 = document.getElementById('combo4');
+            switch (combo4.value) {
+                case "4":
+                    T = 18500;
+                    break;
+                case "10":
+                    T = 9000;
+                    break;
+                case "20":
+                    T = 5500;
+                    break;
+                case "30":
+                    T = 3300;
+                    break;
+                case "40":
+                    T = 2000;
+                    break;
+                case "50":
+                    T = 1500;
+                    break;
+                case "55":
+                    T = 1000;
+                    break;
+                case "60":
+                    T = 800;
+                    break;
+                case "65":
+                    T = 630;
+                    break;
+                case "70":
+                    T = 550;
+                    break;
+                case "75":
+                    T = 530;
+                    break;
+                case "80":
+                    T = 500;
+                    break;
+                case "85":
+                    T = 400;
+                    break;
+                case "90":
+                    T = 300;
+                    break;
+                case "97":
+                    T = 200;
+                    break;
+                case "98":
+                    T = 190;
+                    break;
+                default:
+                    T = 0;
+                    break;
+            }
+        }
+
+        // 计算寿命
+        function calculateLife() {
+            const combo1 = document.getElementById('combo1');
+            const combo2 = document.getElementById('combo2');
+            const combo3 = document.getElementById('combo3');
+            const combo4 = document.getElementById('combo4');
+            const text1 = document.getElementById('text1');
+            const text2 = document.getElementById('text2');
+
+            if (combo1.value === "" || combo2.value === "" || combo3.value === "" || combo4.value === "" || isNaN(parseFloat(text1.value)) || parseFloat(text1.value) === 0) {
+                alert("请正确完整选择相关参数！");
+                return;
+            }
+            if (parseFloat(text1.value) < 0) {
+                alert("请输入正确的通过量！");
+                return;
+            }
+
+            const table = document.getElementById('vsflexgrid1').getElementsByTagName('tbody')[0];
+            const baseValue = JiZhun();
+
+            // 计算寿命
+            for (let i = 0; i < 8; i++) {
+                const temp1 = Math.round(baseValue * LifeC[i] / 10) * 10;
+                // 修改此处，将寿命数据显示到寿命对应的单元格（索引为 5）
+                table.rows[i].cells[5].textContent = temp1; 
+
+                const priceCell = table.rows[i].cells[4];
+                Price[i] = priceCell.textContent === "" ? 0 : parseFloat(priceCell.textContent);
+            }
+
+            const text2Value = parseFloat(text2.value);
+            if (isNaN(text2Value) || text2Value === 0) {
+                for (let i = 0; i < 8; i++) {
+                    if (table.rows[i].cells[4].textContent !== "") {
+                        alert("请输入预计产量！");
+                        return;
+                    }
+                }
+            }
+
+            // 计算吨耗价格
+            for (let i = 0; i < 8; i++) {
+                const temp1 = Math.round(baseValue * LifeC[i] / 10) * 10;
+                if (temp1 !== 0 && text2Value !== 0) {
+                    const value = Math.round((Price[i] * NUM[i]) / (temp1 * text2Value) * 100) / 100;
+                    // 修改此处，将吨耗价格显示到吨耗成本对应的单元格（索引为 6）
+                    table.rows[i].cells[6].textContent = value; 
+                    MpT[i] = value; // 修正为 MpT 数组
+                }
+            }
+
+            // 计算总计
+            let totalMpT = 0;
+            for (let i = 0; i < 8; i++) {
+                totalMpT += MpT[i];
+            }
+
+            // 清空之前可能添加的总计行
+            while (table.rows.length > 8) {
+                table.deleteRow(table.rows.length - 1);
+            }
+
+            const row9 = table.insertRow(8);
+            row9.insertCell(0).textContent = "9";
+            row9.insertCell(1).textContent = "总计";
+            for (let i = 0; i < 4; i++) {
+                row9.insertCell(2 + i).textContent = "";
+            }
+            row9.insertCell(6).textContent = Math.round(totalMpT * 100) / 100;
+
+            // 其他总计逻辑（如果有）...
+        }
+
+        // 导出易损件价格
+        function exportPrice() {
+            const combo1 = document.getElementById('combo1');
+            if (combo1.value === "") {
+                alert("请选择机型！");
+                return;
+            }
+            let txtname;
+            switch (combo1.value) {
+                case "US/USF322H":
+                    txtname = "322-Price";
+                    break;
+                case "US/USF394H":
+                    txtname = "394-Price";
+                    break;
+                case "US/USF496H":
+                    txtname = "496-Price";
+                    break;
+                case "US/USF598H":
+                    txtname = "598-Price";
+                    break;
+            }
+            const table = document.getElementById('vsflexgrid1').getElementsByTagName('tbody')[0];
+            if (table.rows[0].cells[3].textContent === "") {
+                alert("请输入易损件价格！");
+                return;
+            }
+            let content = "";
+            for (let i = 0; i < 7; i++) {
+                content += table.rows[i].cells[3].textContent + "\n";
+            }
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = txtname + ".txt";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 导入易损件价格
+        function importPrice() {
+            const combo1 = document.getElementById('combo1');
+            if (combo1.value === "") {
+                alert("请选择机型！");
+                return;
+            }
+            let txtname;
+            switch (combo1.value) {
+                case "US/USF322H":
+                    txtname = "322-Price";
+                    break;
+                case "US/USF394H":
+                    txtname = "394-Price";
+                    break;
+                case "US/USF496H":
+                    txtname = "496-Price";
+                    break;
+                case "US/USF598H":
+                    txtname = "598-Price";
+                    break;
+            }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt';
+            input.onchange = function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const content = e.target.result;
+                        const lines = content.split('\n');
+                        const table = document.getElementById('vsflexgrid1').getElementsByTagName('tbody')[0];
+                        for (let i = 0; i < 8; i++) {
+                            if (lines[i]) {
+                                // 修改此处，将数据填充到价格单元格（索引为 4）
+                                table.rows[i].cells[4].textContent = lines[i]; 
+                            }
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        // 初始化表格
+        function initTable() {
+            // 表格结构已经在 HTML 中初始化，这里无需再插入行
+            // 可以添加一些其他初始化操作，如清空内容等
+            const table = document.getElementById('vsflexgrid1').getElementsByTagName('tbody')[0];
+            for (let i = 0; i < 8; i++) {
+                const row = table.rows[i];
+                if (row) {
+                    // 注意这里列的索引从 2 开始，因为第一列是易损件描述
+                    row.cells[2].textContent = "";
+                    row.cells[3].textContent = "";
+                    row.cells[4].textContent = "";
+                    row.cells[5].textContent = "";
+                    row.cells[6].textContent = "";
+                }
+            }
+        }
+
+        // 初始化事件监听器
+        function initListeners() {
+            document.getElementById('combo1').addEventListener('change', handleCombo1Change);
+            document.getElementById('combo2').addEventListener('change', handleCombo2Change);
+            document.getElementById('combo3').addEventListener('change', handleCombo3Change);
+            document.getElementById('combo4').addEventListener('change', handleCombo4Change);
+        }
+
+        // 页面加载完成后初始化
+        window.onload = function () {
+            initTable();
+            initListeners();
+        };
+    </script>
+</body>
+
+</html>
